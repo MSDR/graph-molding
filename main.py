@@ -7,6 +7,7 @@ display=True
 if display:
     # set up plt
     plt.ion()
+    plt.figure(figsize=(10,10))
     plt.show(block=False)
 
 # demoing the display
