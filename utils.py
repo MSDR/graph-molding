@@ -14,6 +14,17 @@ def coords_to_tuple(str):
 def manhattan_distance(coords1, coords2):
     return abs(coords1[0] - coords2[0]) + abs(coords1[1] - coords2[1])
 
+# world_size = (width, height)
+def coords_within_world(coords, world_size):
+    width, height = world_size
+    if type(coords) == str:
+        coords = coords_to_tuple(coords)
+    
+    x, y = coords
+    if x < 0 or x > width or y < 0 or y > height:
+        return False
+    return True
+
 # given center_coords and an adjacent point_coords,
 # move distance on square surrounding center_coords from point_coords
 def move_on_3x3_square_perimeter(center_coords, point_coords, distance):
