@@ -12,7 +12,7 @@ class World():
     def __init__(self, size=(100,100)):
         self.size = size
         self.food = self.place_food()
-        self.mold = Mold((50,50), 200)
+        self.mold = Mold((50,50), 200, self.size)
         pass
 
     def place_food(self):
