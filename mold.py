@@ -8,10 +8,10 @@ class Mold():
   ### core functionality ######################################################################################
     
     def __init__(self, center_coords, center_weight, world_size,
-                 decay_rate=0.00, differential_redist_ratio=0.5,
+                 decay_rate=0.01, differential_redist_ratio=0.8,
                  new_tendril_chance=0.2, new_tendril_weight=0.2,
-                 tendril_branch_chance=0.4, tendril_branch_weight=0.5, tendril_branch_left_ratio=0.3,
-                 tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.3, tendril_extension_weight=0.3):
+                 tendril_branch_chance=0.1, tendril_branch_weight=0.7, tendril_branch_left_ratio=0.3,
+                 tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.3, tendril_extension_weight=0.7):
         
         self.G = nx.Graph()
 
@@ -38,13 +38,8 @@ class Mold():
                            'tendril_extension_weight':tendril_extension_weight} #[0,1]. Proportion of leaf weight to pass to new leaf.
 
     def step(self):
-        
-        global_old = self.fitness()
-        self.distribute_weight()
-        global_new = self.fitness()
-        if global_new - global_old > 0.00001:
-            print("problem! new: %f, old: %f" % (global_new, global_old))
         self.decay()
+        self.distribute_weight()
 
         # branch or extend
         tendril_leaves = self.find_tendril_leaves()
@@ -53,10 +48,13 @@ class Mold():
                 self.branch_tendril(leaf)
             elif random.random() < self.chromosome['tendril_extension_chance']:
                 self.extend_tendril(leaf)
+        
 
         # create new tendril from center
         if random.random() < self.chromosome['new_tendril_chance']:
             self.new_tendril()
+
+        
 
     def fitness(self):
         #return self.G.number_of_nodes()
@@ -68,11 +66,13 @@ class Mold():
     def decay(self):
         nodes = list(self.G.nodes())
         for node in nodes:
+            
             weight = self.get_node_weight(node)
             if weight < 1:
                 self.remove_node(node)
             else:
                 self.set_node_weight(node, int(weight*(1-max(0, self.chromosome['decay_rate']))))
+
                 
 
     def distribute_weight(self):
@@ -95,12 +95,13 @@ class Mold():
                 weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio'])
 
                 old_total = self.get_node_weight(node) + self.get_node_weight(nbor)
-                self.set_node_weight(node, self.get_node_weight(node) - weight_diff)
-                self.set_node_weight(nbor, self.get_node_weight(nbor) + weight_diff)
-                new_total = self.get_node_weight(node) + self.get_node_weight(nbor)
+                if self.get_node_weight(node) - weight_diff > 1:
+                    self.set_node_weight(node, self.get_node_weight(node) - weight_diff)
+                    self.set_node_weight(nbor, self.get_node_weight(nbor) + weight_diff)
+                    new_total = self.get_node_weight(node) + self.get_node_weight(nbor)
 
-                if new_total - old_total > 0.000001:
-                    print("problem! new: %f, old: %f" % (new_total, old_total))
+                    #if new_total - old_total > 0.000001:
+                        #print("problem! new: %f, old: %f" % (new_total, old_total))
 
             
 
@@ -138,7 +139,7 @@ class Mold():
 
         # calculate bend amount
         bend = max(min(int((random.random() - 0.5)/self.chromosome['tendril_extension_bend_stdev']), 7), -7)
-        if bend > 0:
+        if bend != 0:
             extension_coords = utils.move_on_3x3_square_perimeter(leaf_coords, extension_coords, bend)
 
         if utils.coords_within_world(extension_coords, self.world_size):
@@ -218,7 +219,13 @@ class Mold():
         if type(coords) != str:
             coords = utils.coords_to_str(coords)
         
+        global_old = self.fitness()
         self.G.remove_node(coords)
+        if coords in self.G.nodes():
+            print("has")
+        global_new = self.fitness()
+        if global_new - global_old > 0.00001:
+            print("problem! new: %f, old: %f" % (global_new, global_old))
 
     def has_node(self, coords):
         if type(coords) != str:

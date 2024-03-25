@@ -14,8 +14,9 @@ class World():
         self.size = size
         self.food = {}
         
-        self.place_food(0)
+        self.place_food(1000)
 
+        self.absorption_rate = 100
         self.mold = Mold((50,50), 10000, self.size)
 
     def place_food(self, num_food):
@@ -52,13 +53,12 @@ class World():
     def feed(self):
         for food_coords, food_weight in list(self.food.items()):
             if self.mold.has_node(food_coords):
-                print("feeding at (%d, %d)!" % food_coords)
-                self.mold.set_node_weight(food_coords, self.mold.get_node_weight(food_coords)+min(10, food_weight))
+                self.mold.set_node_weight(food_coords, self.mold.get_node_weight(food_coords)+min(self.absorption_rate, food_weight))
 
-                if food_weight <= 10:
+                if food_weight <= self.absorption_rate:
                     self.food.pop(food_coords)
                 else:
-                    self.food[food_coords] -= 10
+                    self.food[food_coords] -= self.absorption_rate
 
     def display(self):
         plt.clf()
@@ -77,7 +77,8 @@ class World():
         plt.title("fitness: "+str(self.mold.fitness()))
         plt.plot()
 
-        plt.scatter([c[0] for c in self.food.keys()], [c[1] for c in self.food.keys()], s=list(self.food.values()), c='green')
+        food_sizes = [max(1, 100*(f/1000)) for f in list(self.food.values())]
+        plt.scatter([c[0] for c in self.food.keys()], [c[1] for c in self.food.keys()], s=food_sizes, c='green')
 
         # allow rendering time
         plt.pause(0.01)        

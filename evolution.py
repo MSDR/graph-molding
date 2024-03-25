@@ -71,7 +71,7 @@ class GeneticAlgorithm():
         # We will loop over the number of epochs
         for epoch in range(self.epochs):
             # We will perform an iteration of the Genetic Algorithm, which is defined as step
-            #print(epoch)
+            print(epoch)
             self.step()
         return self.generation
 
@@ -97,6 +97,7 @@ class GeneticAlgorithm():
         
         # We will then sort the list of fitness scores in descending order
         fitness_scores.sort(reverse=True)
+        print(" > %f", fitness_scores[0])
 
         # Based on the success_ratio, we will take ~success_ration% of the world of molds to move on to the new iteration of the
         # Genetic Algorithm
