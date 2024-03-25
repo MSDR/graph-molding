@@ -19,8 +19,10 @@ class World():
         pass
 
     def simulate(self, steps=100, framerate=10, display=False):
-        self.display()
-        time.sleep(1)
+        if display:
+            self.display()
+            time.sleep(1)
+        
         self.mold.new_tendril()
         
         for step in range(steps):
