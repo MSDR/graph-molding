@@ -1,8 +1,9 @@
 import world
 import random
+import utils
 
 class GeneticAlgorithm():
-    def __init__(self, epochs = 100, mutation_rate=0.1, generation_size=10, success_ratio=0.1):
+    def __init__(self, epochs = 100, mutation_rate=0.05, generation_size=10, success_ratio=0.2):
         # number of full simulations to run
         self.epochs = epochs
 
@@ -32,9 +33,14 @@ class GeneticAlgorithm():
             # We will then loop through every chromosome and set a random value
             chromosomes = new_world.mold.chromosome.keys()
             for chromosome in chromosomes:
-                new_world.mold.chromosome[chromosome] = random.random()
-                if chromosome == 'tendril_extension_bend_stdev':
+                if chromosome == 'decay_rate':
+                    new_world.mold.chromosome[chromosome] = 0.01
+                elif chromosome == 'tendril_extension_bend_stdev':
                     new_world.mold.chromosome[chromosome]/=2
+                else:
+                    new_world.mold.chromosome[chromosome] = random.random()
+
+                
 
             # We will then append it to the total list of molds
             generational_molds.append(new_world)
@@ -73,6 +79,11 @@ class GeneticAlgorithm():
             # We will perform an iteration of the Genetic Algorithm, which is defined as step
             print(epoch)
             self.step()
+
+            if epoch % 10 == 0:
+                best_world = sorted(self.generation, key = lambda w: w.mold.fitness())[-1]
+                utils.save_world(best_world, "worlds/test/"+str(epoch)+".pkl")
+
         return self.generation
 
     # one iteration
@@ -97,7 +108,7 @@ class GeneticAlgorithm():
         
         # We will then sort the list of fitness scores in descending order
         fitness_scores.sort(reverse=True)
-        print(" > %f", fitness_scores[0])
+        print(" > top fitness: %f" % fitness_scores[0][0])
 
         # Based on the success_ratio, we will take ~success_ration% of the world of molds to move on to the new iteration of the
         # Genetic Algorithm

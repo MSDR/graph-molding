@@ -4,26 +4,22 @@ import networkx as nx
 import random
 import time
 
-class Food():
-    def __init__(self, coords, size):
-        self.coords = coords
-        self.size = size
-
-class World():
+class World(object):
     def __init__(self, size=(100,100)):
         self.size = size
         self.food = {}
         
-        self.place_food(1000)
+        self.num_food = 500
+        self.place_food()
 
         self.absorption_rate = 100
         self.mold = Mold((50,50), 10000, self.size)
 
-    def place_food(self, num_food):
+    def place_food(self):
         seed = random.randint(1,100000)
         random.seed(42)
 
-        for n in range(num_food):
+        for n in range(self.num_food):
             x = random.randint(0, self.size[0])
             y = random.randint(0, self.size[1])
             self.food[(x,y)] = random.randint(100,1000)
@@ -49,6 +45,9 @@ class World():
                 frame_buffer = 1/framerate - elapsed
                 if frame_buffer > 0:
                     time.sleep(frame_buffer)
+
+            if self.mold.G.number_of_nodes == 0:
+                return
 
     def feed(self):
         for food_coords, food_weight in list(self.food.items()):
@@ -81,4 +80,9 @@ class World():
         plt.scatter([c[0] for c in self.food.keys()], [c[1] for c in self.food.keys()], s=food_sizes, c='green')
 
         # allow rendering time
-        plt.pause(0.01)        
+        plt.pause(0.01)       
+
+    def reset(self):
+        self.mold.reset_G()
+        self.food = {}
+        self.place_food()

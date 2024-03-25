@@ -7,15 +7,16 @@ import utils
 class Mold():
   ### core functionality ######################################################################################
     
-    def __init__(self, center_coords, center_weight, world_size,
-                 decay_rate=0.01, differential_redist_ratio=0.8,
-                 new_tendril_chance=0.2, new_tendril_weight=0.2,
-                 tendril_branch_chance=0.1, tendril_branch_weight=0.7, tendril_branch_left_ratio=0.3,
-                 tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.3, tendril_extension_weight=0.7):
+    def __init__(self, center_coords, starting_center_weight, world_size,
+                 decay_rate=0.001, differential_redist_ratio=0.8,
+                 new_tendril_chance=0.2, new_tendril_weight=0.5,
+                 tendril_branch_chance=0.4, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
+                 tendril_extension_chance=0.9, tendril_extension_bend_stdev=0.3, tendril_extension_weight=0.9):
         
         self.G = nx.Graph()
 
-        self.add_node(center_coords, int(center_weight))
+        self.add_node(center_coords, int(starting_center_weight))
+        self.starting_center_weight = starting_center_weight
         self.center_coords = center_coords
 
         self.frozen_G = None
@@ -81,10 +82,6 @@ class Mold():
         for node in list(self.G.nodes()):
             node_weight = self.frozen_G.nodes[node]['weight']
 
-
-            # 20-10-20 -> 15->15->20 -> 15->15->20 -> 15->20->15
-
-
             # {neighbor:neighbor_weight}
             # only consider neighbors with smaller weight
             neighbors = {nbor:self.frozen_G.nodes[nbor]['weight'] for nbor in list(self.G.neighbors(node)) if self.frozen_G.nodes[nbor]['weight'] < node_weight}
@@ -102,8 +99,6 @@ class Mold():
 
                     #if new_total - old_total > 0.000001:
                         #print("problem! new: %f, old: %f" % (new_total, old_total))
-
-            
 
 
     def branch_tendril(self, leaf_coords):
@@ -198,6 +193,14 @@ class Mold():
         leaf_x, leaf_y = utils.coords_to_tuple(leaf_coords)
         nbor_x, nbor_y = utils.coords_to_tuple(neighbor[0])
         return (leaf_x + (leaf_x - nbor_x), leaf_y + (leaf_y - nbor_y))
+    
+    def reset_G(self):
+        self.G = nx.Graph()
+
+        self.add_node(self.center_coords, int(self.starting_center_weight))
+
+        self.frozen_G = None
+        self.freeze_G()
         
 
    ## nx wrappers ######################################

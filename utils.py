@@ -1,3 +1,16 @@
+import pickle
+
+def save_world(world, filepath):
+    pickled = pickle.dumps(world)
+    with open(filepath, "wb") as file:
+        file.write(pickled)
+
+def load_world(filepath):
+    with open(filepath, "rb") as file:
+        world = pickle.load(file)
+        world.reset()
+        return world
+
 def coords_to_str(x, y):
     return '('+str(x)+','+str(y)+')'
 
