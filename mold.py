@@ -90,10 +90,10 @@ class Mold():
             # {neighbor:neighbor_weight}
             # only consider neighbors with smaller weight
             neighbors = {nbor:self.frozen_G.nodes[nbor]['weight'] for nbor in list(self.G.neighbors(node)) if self.frozen_G.nodes[nbor]['weight'] < node_weight}
+            sorted_neighbors = sorted([(nbor, nbor_weight) for nbor, nbor_weight in neighbors.items()], key=lambda l: l[1])
 
-            # distribute weight based on ratio of weight differential
-            
-            for nbor, nbor_weight in neighbors.items():
+            # distribute weight based on ratio of weight differential            
+            for nbor, nbor_weight in sorted_neighbors:
                 weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio'])
 
                 old_total = self.get_node_weight(node) + self.get_node_weight(nbor)

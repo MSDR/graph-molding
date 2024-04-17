@@ -7,7 +7,7 @@ import random
 import time
 
 class World(object):
-    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.sum_weight):
+    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.num_nodes):
         self.size = size
         self.food = {}
         
@@ -36,6 +36,7 @@ class World(object):
     # run full simulation
     def simulate(self, steps=100, framerate=10, display=False):
         if display:
+            self.launch_display()
             self.display()
             time.sleep(1)
         
@@ -55,7 +56,10 @@ class World(object):
                     time.sleep(frame_buffer)
 
             if self.mold.G.number_of_nodes == 0:
-                return
+                break
+
+        if display:
+            self.kill_display()
 
     # absorb food into overlapping nodes
     def feed(self):
@@ -72,6 +76,11 @@ class World(object):
         plt.ion()
         plt.figure(figsize=(10,10*(self.size[1]/self.size[0])))
         plt.show(block=False)
+
+    def kill_display(self):
+        plt.ioff()
+        time.sleep(1)
+        plt.close()
 
     # display (in a separate window)
     def display(self):

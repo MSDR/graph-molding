@@ -1,22 +1,23 @@
+import fitness_functions
 import world
 
-def random_500():
-    W = world.World(mold_pos=(50,50))
+def random_500(fitness_function=fitness_functions.num_nodes):
+    W = world.World(mold_pos=(50,50), fitness_function=fitness_function)
     W.place_food(num_random=500)
     return W
 
 # tokyo rail network?
 # https://i.makeagif.com/media/9-28-2018/9gYd4-.gif
-def gif_mold():
-    W = world.World(mold_pos=(47,48))
+def gif_mold(fitness_function=fitness_functions.num_nodes):
+    W = world.World(mold_pos=(47,48), fitness_function=fitness_function)
     W.place_food(food_coords=[((75,94), 1000),((53,90), 1000),((28,84), 1000),((35,84), 1000),((26,81), 1000),((40,81), 1000),((50,79), 1000),((71,82), 1000),((37,72), 1000),((62,68), 1000),
                               ((43,62), 1000),((44,57), 1000),((55,57), 1000),((72,59), 1000),((66,52), 1000),((34,47), 1000),((55,48), 1000),((63,49), 1000),((77,49), 1000),((83,48), 1000),
                               ((69,43), 1000),((35,42), 1000),((44,35), 1000),((58,36), 1000),((59,43), 1000),((54,31), 1000),((67,31), 1000),((33,29), 1000),((37,30), 1000),((41,27), 1000),
                               ((28,26), 1000),((45,24), 1000),((66,19), 1000),((18,15), 1000),((25, 7), 1000),((52, 9), 1000)])
     return W
 
-def interstate_map():
-    W = world.World(size=(93,60), mold_pos=(46,35))
+def interstate_map(fitness_function=fitness_functions.num_nodes):
+    W = world.World(size=(93,60), mold_pos=(46,35), fitness_function=fitness_function)
     W.place_food(food_coords=[((9, 56), 1000), ((15, 54), 1000), ((20, 51), 1000), ((24, 52), 1000), ((40, 49), 1000), ((51, 44), 1000), ((60, 41), 1000), ((68, 40), 1000), ((74, 42), 1000), 
                               ((87, 47), 1000), ((87, 44), 1000), ((83, 39), 1000), ((82, 37), 1000), ((79, 35), 1000), ((76, 31), 1000), ((78, 27), 1000), ((75, 25), 1000), ((68, 21), 1000), 
                               ((65, 17), 1000), ((74, 14), 1000), ((73, 9), 1000), ((78, 5), 1000), ((58, 11), 1000), ((64, 20), 1000), ((63, 25), 1000), ((64, 34), 1000), ((69, 35), 1000), 
