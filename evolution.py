@@ -82,7 +82,7 @@ class GeneticAlgorithm():
 
             if epoch % 10 == 0:
                 best_world = sorted(self.generation, key = lambda w: w.mold.fitness())[-1]
-                utils.save_world(best_world, "worlds/test/"+str(epoch)+".pkl")
+                utils.save_world(best_world, "worlds/live_test/"+str(epoch)+".pkl")
 
         return self.generation
 

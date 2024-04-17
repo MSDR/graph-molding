@@ -1,31 +1,39 @@
+import fitness_functions
 import matplotlib.pyplot as plt
+import mold
 from mold import Mold
 import networkx as nx
 import random
 import time
 
 class World(object):
-    def __init__(self, size=(100,100)):
+    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.sum_weight):
         self.size = size
         self.food = {}
         
-        self.num_food = 500
-        self.place_food()
-
         self.absorption_rate = 100
-        self.mold = Mold((50,50), 10000, self.size)
+        self.mold = Mold(mold_pos, 10000, self.size)
+        self.fitness_function = fitness_function
 
-    def place_food(self):
-        seed = random.randint(1,100000)
-        random.seed(42)
+    # places food into the world
+    # num_random is number of foods to place at random coordinates
+    # food_coords, a list of ((x,y), size) tuples, places food at provided coordinates
+    def place_food(self, num_random=0, random_range_min=100, random_range_max=1000, food_coords=[], seed=None):
+        if seed == None:
+            seed = random.randint(1,100000)
+        random.seed(seed)
 
-        for n in range(self.num_food):
+        for n in range(num_random):
             x = random.randint(0, self.size[0])
             y = random.randint(0, self.size[1])
-            self.food[(x,y)] = random.randint(100,1000)
+            self.food[(x,y)] = random.randint(random_range_min,random_range_max)
+
+        for coords, size in food_coords:
+            self.food[coords] = size
 
         random.seed(seed)
 
+    # run full simulation
     def simulate(self, steps=100, framerate=10, display=False):
         if display:
             self.display()
@@ -49,6 +57,7 @@ class World(object):
             if self.mold.G.number_of_nodes == 0:
                 return
 
+    # absorb food into overlapping nodes
     def feed(self):
         for food_coords, food_weight in list(self.food.items()):
             if self.mold.has_node(food_coords):
@@ -59,6 +68,7 @@ class World(object):
                 else:
                     self.food[food_coords] -= self.absorption_rate
 
+    # display (in a separate window)
     def display(self):
         plt.clf()
 
@@ -73,7 +83,7 @@ class World(object):
         node_weights = [max(1, 100*(w/(1000))) for w in node_weights]
         node_color = [[138/255,54/255,31/255]] # brown
         nx.draw(self.mold.G, pos, node_size=node_weights, node_color=node_color, width=1)
-        plt.title("fitness: "+str(self.mold.fitness()))
+        plt.title("fitness: "+str(self.fitness_function(self.mold)))
         plt.plot()
 
         food_sizes = [max(1, 100*(f/1000)) for f in list(self.food.values())]

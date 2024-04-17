@@ -1,24 +1,25 @@
+import designed_worlds
+import evolution
+import glob
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
-import world
-import evolution
 import utils
-import glob
+import world
 
 display=True
 
+# set up plt
 if display:
-    # set up plt
     plt.ion()
     plt.figure(figsize=(10,10))
     plt.show(block=False)
 
-# demoing the display
-W = world.World()
-#W = utils.load_world("worlds/test.pkl")
+W = designed_worlds.gif_mold()
 W.simulate(steps=400, display=display)
+#W = utils.load_world("worlds/test.pkl")
 
+### Genetic Algorithm Demo
 # # # We will perform our Genetic Algorithm with its default parameters
 # GA = evolution.GeneticAlgorithm(epochs=100)
 # best_worlds = GA.run_algorithm()
@@ -41,8 +42,9 @@ W.simulate(steps=400, display=display)
 # for chromosome in chromosomes:
 #     print("%s: %f" %(chromosome, W_best.mold.chromosome[chromosome]))
 
-# utils.save_world(W_best, "worlds/test/final.pkl")
+# utils.save_world(W_best, "worlds/live_test/final.pkl")
 
+### Evolution Demo
 # for filepath in glob.glob("worlds/test/*.pkl"):
 #     print("simulating", filepath)
 #     W = utils.load_world(filepath)

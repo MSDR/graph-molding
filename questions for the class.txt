@@ -1,0 +1,13 @@
+Ideas for more fitness functions?
+
+
+Ideas for more genes?
+
+
+Advice for cleaner visualization?
+
+
+Interesting ideas for analysis?
+- simulating multiple molds
+- overlay sim food positions with petri dish video
+- overlay food with transportation network

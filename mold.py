@@ -8,7 +8,7 @@ class Mold():
   ### core functionality ######################################################################################
     
     def __init__(self, center_coords, starting_center_weight, world_size,
-                 decay_rate=0.001, differential_redist_ratio=0.8,
+                 decay_rate=0.000, differential_redist_ratio=0.8,
                  new_tendril_chance=0.2, new_tendril_weight=0.5,
                  tendril_branch_chance=0.4, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
                  tendril_extension_chance=0.9, tendril_extension_bend_stdev=0.3, tendril_extension_weight=0.9):
@@ -25,18 +25,28 @@ class Mold():
         self.world_size = world_size
 
         self.chromosome = {'decay_rate':decay_rate, #[0,1]. Proportion of weight to decay at each step. TODO
-                           'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards. 
+                           'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
+                           # 10-20-10 -> 15-10-15 with ratio=0.5 
                            
                            'new_tendril_chance':new_tendril_chance, #[0,1]. Chance per step to create new tendril from center.
                            'new_tendril_weight':new_tendril_weight, #[0,1]. Proportion of center weight to pass to new tendril.
+                           # center
+                           #    |
+                           #   new
 
                            'tendril_branch_chance':tendril_branch_chance, #[0,1]. Chance per step per leaf to branch.
                            'tendril_branch_weight':tendril_branch_weight, #[0,1]. Proportion of leaf weight to pass to new leaves.
                            'tendril_branch_left_ratio':tendril_branch_left_ratio, #[0,1]. Proportion of branch weight to give to left branch.
+                           #   leaf
+                           #   /  \
+                           #  R    L
 
                            'tendril_extension_chance':tendril_extension_chance, #[0,1]. Chance per step per leaf to extend tendril if branch failed.
                            'tendril_extension_bend_stdev':tendril_extension_bend_stdev, #[0,0.5], lower value means more bending.
                            'tendril_extension_weight':tendril_extension_weight} #[0,1]. Proportion of leaf weight to pass to new leaf.
+                            #   leaf  leaf   leaf-new
+                            #     |      \
+                            #    new     new
 
     def step(self):
         self.decay()
@@ -55,11 +65,6 @@ class Mold():
         if random.random() < self.chromosome['new_tendril_chance']:
             self.new_tendril()
 
-        
-
-    def fitness(self):
-        #return self.G.number_of_nodes()
-        return sum([self.get_node_weight(n) for n in self.G.nodes()])
 
   ### utility functions #######################################################################################
 
@@ -157,7 +162,7 @@ class Mold():
         # collect open adjacent coordinates
         open_directions = []
         for x in range(self.center_coords[0]-1, self.center_coords[0]+2):
-            for y in range(self.center_coords[0]-1, self.center_coords[0]+2): 
+            for y in range(self.center_coords[1]-1, self.center_coords[1]+2): 
                 if (x,y) != self.center_coords and not self.G.has_node(utils.coords_to_str((x,y))):
                     open_directions.append((x,y))
         if len(open_directions) == 0:
