@@ -17,9 +17,9 @@ display=True
 
 
 ### Genetic Algorithm Demo
-GA = evolution.GeneticAlgorithm(epochs=100, mutation_rate=0.1, generation_size=20, success_ratio=0.2,
-                                world_function=designed_worlds.interstate_map, fitness_function=fitness_functions.num_nodes, 
-                                ckpt_folder='worlds/interstate/')
+GA = evolution.GeneticAlgorithm(epochs=100, sim_steps=200, mutation_rate=0.05, generation_size=50, success_ratio=0.1,
+                                world_function=designed_worlds.interstate_map, fitness_function=fitness_functions.dense, 
+                                ckpt_folder='worlds/interstate/dense/')
 best_worlds = GA.run_algorithm()
 
 # Once the Genetic Algorithm is done, we will select the best mold
@@ -42,7 +42,8 @@ W_best.simulate(steps=100, display=True)
 
 
 ### Evolution Demo
-# for filepath in glob.glob("worlds/interstate/*.pkl"):
+# for filepath in glob.glob("worlds/interstate/dense/*.pkl"):
 #     print("simulating", filepath)
 #     W = utils.load_world(filepath)
 #     W.simulate(steps=100, display=True)
+#     print(W.fitness())

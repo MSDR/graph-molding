@@ -5,11 +5,13 @@ import utils
 import world
 
 class GeneticAlgorithm():
-    def __init__(self, epochs = 100, mutation_rate=0.05, generation_size=10, success_ratio=0.2, 
+    def __init__(self, epochs = 100, sim_steps=100, mutation_rate=0.05, generation_size=10, success_ratio=0.2, 
                  world_function=designed_worlds.random_500, fitness_function=fitness_functions.num_nodes,
                  ckpt_folder=None):
         # number of full simulations to run
         self.epochs = epochs
+
+        self.sim_steps = sim_steps
 
         # rate of mutation per gene btw [0,1]
         self.mutation_rate = mutation_rate
@@ -30,6 +32,7 @@ class GeneticAlgorithm():
 
         # leave as None to not save checkpoints
         self.ckpt_folder=ckpt_folder
+        self.best_fitness=-float('inf')
 
     # populates first generation of worlds
     def first_generation(self, generation_size):
@@ -85,11 +88,11 @@ class GeneticAlgorithm():
     # Run the Genetic Algorithm a 'epochs' amount of times. We will return a list of molds with optimized chromosome values
     def run_algorithm(self):
         # We will loop over the number of epochs
-        best_fitness = -float('inf')
         for epoch in range(self.epochs):
             # We will perform an iteration of the Genetic Algorithm, which is defined as step
             self.step() 
 
+            # TODO: this doesn't work because self.generation hasn't simulated yet
             best_world = sorted(self.generation, key = lambda w: w.fitness())[-1]
             best_world_fitness = best_world.fitness()
 
@@ -116,7 +119,7 @@ class GeneticAlgorithm():
         # We will loop through each of the worlds from the generation list
         for worlds in self.generation:
             # We will simulate the world
-            worlds.simulate()
+            worlds.simulate(steps=self.sim_steps)
 
             # We will then calculate the fitness score
             fitness = worlds.fitness()

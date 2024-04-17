@@ -7,34 +7,41 @@ import random
 import time
 
 class World(object):
-    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.num_nodes):
+    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.num_nodes,
+                 num_random_food=0, random_food_range=(100,1000), food_coords=[], seed=None):
         self.size = size
-        self.food = {}
-        
         self.absorption_rate = 100
-        self.mold = Mold(mold_pos, 10000, self.size)
         self.fitness_function = fitness_function
+
+        # parameters for placing food
+        self.num_random_food = num_random_food
+        self.random_food_range = random_food_range
+        self.init_food_coords = food_coords
+        self.random_seed = seed
+        
+        self.mold = Mold(mold_pos, 10000, self.size)
+        self.food = {}
 
     # places food into the world
     # num_random is number of foods to place at random coordinates
     # food_coords, a list of ((x,y), size) tuples, places food at provided coordinates
-    def place_food(self, num_random=0, random_range_min=100, random_range_max=1000, food_coords=[], seed=None):
-        if seed == None:
-            seed = random.randint(1,100000)
-        random.seed(seed)
+    def place_food(self):
+        if self.random_seed== None:
+            self.random_seed = random.randint(1,100000)
+        random.seed(self.random_seed)
 
-        for n in range(num_random):
+        # place random food
+        for n in range(self.num_random_food):
             x = random.randint(0, self.size[0])
             y = random.randint(0, self.size[1])
-            self.food[(x,y)] = random.randint(random_range_min,random_range_max)
+            self.food[(x,y)] = random.randint(self.random_food_range[0], self.random_food_range[1])
 
-        for coords, size in food_coords:
+        # place provided food
+        for coords, size in self.init_food_coords:
             self.food[coords] = size
 
-        random.seed(seed)
-
     # run full simulation
-    def simulate(self, steps=100, framerate=10, display=False):
+    def simulate(self, steps=60, framerate=10, display=False):
         if display:
             self.launch_display()
             self.display()
@@ -67,10 +74,10 @@ class World(object):
             if self.mold.has_node(food_coords):
                 self.mold.set_node_weight(food_coords, self.mold.get_node_weight(food_coords)+min(self.absorption_rate, food_weight))
 
-                if food_weight <= self.absorption_rate:
-                    self.food.pop(food_coords)
-                else:
-                    self.food[food_coords] -= self.absorption_rate
+                # if food_weight <= self.absorption_rate:
+                #     self.food.pop(food_coords)
+                # else:
+                #     self.food[food_coords] -= self.absorption_rate
 
     def launch_display(self):
         plt.ion()
