@@ -68,6 +68,11 @@ class World(object):
                 else:
                     self.food[food_coords] -= self.absorption_rate
 
+    def launch_display(self):
+        plt.ion()
+        plt.figure(figsize=(10,10*(self.size[1]/self.size[0])))
+        plt.show(block=False)
+
     # display (in a separate window)
     def display(self):
         plt.clf()
