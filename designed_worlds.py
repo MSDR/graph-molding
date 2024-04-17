@@ -1,5 +1,10 @@
 import world
 
+def random_500():
+    W = world.World(mold_pos=(50,50))
+    W.place_food(num_random=500)
+    return W
+
 # tokyo rail network?
 # https://i.makeagif.com/media/9-28-2018/9gYd4-.gif
 def gif_mold():

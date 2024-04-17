@@ -96,3 +96,6 @@ class World(object):
         self.mold.reset_G()
         self.food = {}
         self.place_food()
+
+    def fitness(self):
+        return self.fitness_function(self.mold)

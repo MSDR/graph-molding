@@ -227,13 +227,7 @@ class Mold():
         if type(coords) != str:
             coords = utils.coords_to_str(coords)
         
-        global_old = self.fitness()
         self.G.remove_node(coords)
-        if coords in self.G.nodes():
-            print("has")
-        global_new = self.fitness()
-        if global_new - global_old > 0.00001:
-            print("problem! new: %f, old: %f" % (global_new, global_old))
 
     def has_node(self, coords):
         if type(coords) != str:
