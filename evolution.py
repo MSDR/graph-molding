@@ -32,7 +32,6 @@ class GeneticAlgorithm():
 
         # leave as None to not save checkpoints
         self.ckpt_folder=ckpt_folder
-        self.best_fitness=-float('inf')
 
     # populates first generation of worlds
     def first_generation(self, generation_size):
@@ -88,6 +87,7 @@ class GeneticAlgorithm():
     # Run the Genetic Algorithm a 'epochs' amount of times. We will return a list of molds with optimized chromosome values
     def run_algorithm(self):
         # We will loop over the number of epochs
+        best_fitness = -float('inf')
         for epoch in range(self.epochs):
             # We will perform an iteration of the Genetic Algorithm, which is defined as step
             self.step() 
