@@ -106,12 +106,12 @@ class GeneticAlgorithm():
             # save best world
             if best_world_fitness > self.best_fitness:
                 self.best_fitness = best_world_fitness
-                #utils.save_world(best_world, self.ckpt_folder+"best.pkl")
+                utils.save_world(best_world, self.ckpt_folder+"best.pkl")
                 print("..saving new best at epoch %d! fitness: %.2f" % (epoch, best_world_fitness))
 
             # save checkpoint
             if epoch % 10 == 0 and self.ckpt_folder is not None:
-                #utils.save_world(best_world, self.ckpt_folder+str(epoch)+".pkl")
+                utils.save_world(best_world, self.ckpt_folder+str(epoch)+".pkl")
                 print("...saving epoch %d checkpoint. fitness: %.2f" % (epoch, best_world_fitness))
 
         return self.generation
