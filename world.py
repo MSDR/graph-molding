@@ -22,12 +22,15 @@ class World(object):
         self.mold = Mold(mold_pos, 10000, self.size)
         self.food = {}
 
+        self.best_fitness = -float('inf')
+        self.last_fitnesses = []
+
     # places food into the world
     # num_random is number of foods to place at random coordinates
     # food_coords, a list of ((x,y), size) tuples, places food at provided coordinates
     def place_food(self):
-        if self.random_seed== None:
-            self.random_seed = random.randint(1,100000)
+        if self.random_seed is None:
+            self.random_seed = random.seed(time.time())
         random.seed(self.random_seed)
 
         # place random food
@@ -55,6 +58,11 @@ class World(object):
             self.feed()
             self.mold.step()
 
+            # update fitness tracker
+            fitness = self.fitness()
+            if fitness > self.best_fitness:
+                self.best_fitness = fitness
+
             if display:
                 self.display()
                 elapsed = time.time() - frame_start
@@ -64,6 +72,8 @@ class World(object):
 
             if self.mold.G.number_of_nodes == 0:
                 break
+
+        self.last_fitnesses.append(self.fitness())
 
         if display:
             self.kill_display()
@@ -113,10 +123,20 @@ class World(object):
         # allow rendering time
         plt.pause(0.01)       
 
-    def reset(self):
+    def reset(self, reset_best_fitness=True, reset_last_fitnesses=True):
+        # reset mold
         self.mold.reset_G()
+
+        # reset food placements and sizes
         self.food = {}
         self.place_food()
+
+        # reset fitness trackers
+        if reset_best_fitness:
+            self.best_fitness = -float('inf')
+
+        if reset_last_fitnesses:
+            self.last_fitnesses = []
 
     def fitness(self):
         return self.fitness_function(self.mold)

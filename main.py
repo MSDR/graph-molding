@@ -5,11 +5,11 @@ import glob
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
+import time
 import utils
 import world
 
 display=True
-
 
 ### Interstate Demo
 # W = designed_worlds.interstate_map()
@@ -17,9 +17,9 @@ display=True
 
 
 ### Genetic Algorithm Demo
-GA = evolution.GeneticAlgorithm(epochs=100, sim_steps=200, mutation_rate=0.05, generation_size=50, success_ratio=0.1,
+GA = evolution.GeneticAlgorithm(epochs=100, sim_steps=100, trials=10, mutation_rate=0.05, generation_size=10, success_ratio=0.1,
                                 world_function=designed_worlds.interstate_map, fitness_function=fitness_functions.dense, 
-                                ckpt_folder='worlds/interstate/dense/')
+                                ckpt_folder='worlds/test/')
 best_worlds = GA.run_algorithm()
 
 # Once the Genetic Algorithm is done, we will select the best mold
