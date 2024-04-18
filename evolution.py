@@ -1,3 +1,4 @@
+import copy
 import designed_worlds
 import fitness_functions
 import random
@@ -5,13 +6,13 @@ import utils
 import world
 
 class GeneticAlgorithm():
-    def __init__(self, epochs = 100, sim_steps=100, mutation_rate=0.05, generation_size=10, success_ratio=0.2, 
+    def __init__(self, epochs = 100, sim_steps=100, trials=10, mutation_rate=0.05, generation_size=10, success_ratio=0.2, 
                  world_function=designed_worlds.random_500, fitness_function=fitness_functions.num_nodes,
-                 ckpt_folder=None):
-        # number of full simulations to run
+                 ckpt_folder=None, ckpt_interval=10):
+        # simulation parameters
         self.epochs = epochs
-
         self.sim_steps = sim_steps
+        self.trials = trials
 
         # rate of mutation per gene btw [0,1]
         self.mutation_rate = mutation_rate
@@ -25,14 +26,15 @@ class GeneticAlgorithm():
         # function to generate new worlds
         self.world_function = world_function
 
+        # function to use for fitness evaluation
         self.fitness_function = fitness_function
 
         # list of worlds, each with their own single mold
         self.generation = self.first_generation(generation_size)
 
-        # leave as None to not save checkpoints
-        self.ckpt_folder=ckpt_folder
-        self.best_fitness=-float('inf')
+        # checkpoint info
+        self.ckpt_folder = ckpt_folder # leave as None to not save checkpoints
+        self.ckpt_interval = ckpt_interval
 
     # populates first generation of worlds
     def first_generation(self, generation_size):
@@ -88,90 +90,57 @@ class GeneticAlgorithm():
     # Run the Genetic Algorithm a 'epochs' amount of times. We will return a list of molds with optimized chromosome values
     def run_algorithm(self):
         # We will loop over the number of epochs
-        for epoch in range(self.epochs):
+        best_fitness = -float('inf')
+        for epoch in range(1,self.epochs+1):
             # We will perform an iteration of the Genetic Algorithm, which is defined as step
             self.step() 
 
-            # TODO: this doesn't work because self.generation hasn't simulated yet
-            for worlds in self.generation:
-                # We will simulate the world
-                worlds.simulate(steps=self.sim_steps)
+            # take top performers as parents
+            self.generation.sort(key=lambda w: sum(w.last_fitnesses)/len(w.last_fitnesses), reverse=True)
+            parents = copy.deepcopy(self.generation[0:int(self.generation_size*self.success_ratio)+1])
 
-            best_world = sorted(self.generation, key = lambda w: w.fitness())[-1]
-            best_world_fitness = best_world.fitness()
-
-            for worlds in self.generation:
-                worlds.reset()
+            best_world = self.generation[0]
+            best_world_fitness = sum(best_world.last_fitnesses)/len(best_world.last_fitnesses)
 
             # save best world
-            if best_world_fitness > self.best_fitness:
-                self.best_fitness = best_world_fitness
+            if best_world_fitness > best_fitness:
+                best_fitness = best_world_fitness
                 utils.save_world(best_world, self.ckpt_folder+"best.pkl")
-                print("..saving new best at epoch %d! fitness: %.2f" % (epoch, best_world_fitness))
+                print("..saving new best at epoch %d! avg. last fitness: %.2f" % (epoch, best_world_fitness))
 
             # save checkpoint
-            if epoch % 10 == 0 and self.ckpt_folder is not None:
+            if (self.ckpt_folder is not None) and (epoch == 1 or epoch % self.ckpt_interval == 0):
                 utils.save_world(best_world, self.ckpt_folder+str(epoch)+".pkl")
-                print("...saving epoch %d checkpoint. fitness: %.2f" % (epoch, best_world_fitness))
+                print("...saving epoch %d checkpoint. avg. last fitness: %.2f" % (epoch, best_world_fitness))
+
+            # We will reset the generation set
+            self.generation = []
+
+            # We will loop through the parents of the world
+            for worlds in parents:
+                # We will reset the world
+                worlds.reset()
+
+                # We will then append the parent freshly reset in the list of generations
+                self.generation.append(worlds)
+
+            # We will then repopulate the generation set until we have a size of 'generation_size'
+            while len(self.generation) < self.generation_size:
+                # We will compute index 1 and 2 that will represent parents 1 and 2
+                index1 = random.randint(0, len(parents)-1)
+                index2 = random.randint(0, len(parents)-1)
+                while index1 == index2:
+                    index2 = random.randint(0, len(parents)-1)
+
+                # We will then perform...hehehehehe
+                self.sex(parents[index1], parents[index2])
 
         return self.generation
     
 
     # one iteration
     def step(self):
-        # We will calculate the fitness scores of each of the molds
-        fitness_scores = []
-        index = 0
-
-        # We will loop through each of the worlds from the generation list
-        for worlds in self.generation:
-            # We will simulate the world
-            worlds.simulate(steps=self.sim_steps)
-
-            # We will then calculate the fitness score
-            fitness = worlds.fitness()
-
-            # We will then appeand a tuple that contains (fitness score, index of world)
-            fitness_scores.append((fitness, index))
-
-            # We then increment the index by 1
-            index+=1
-        
-        # We will then sort the list of fitness scores in descending order
-        fitness_scores.sort(reverse=True)
-        #print(" > top fitness: %f" % fitness_scores[0][0])
-
-        # Based on the success_ratio, we will take ~success_ration% of the world of molds to move on to the new iteration of the
-        # Genetic Algorithm
-        successors_size = int(self.generation_size*self.success_ratio)
-        fitness_scores = fitness_scores[0:successors_size]
-
-        #print(fitness_scores[0][0])
-
-        # We will then create a list of parents
-        parents = []
-
-        # We will loop through the fitness scores
-        for combo in fitness_scores:
-            # We will take the generation world of mold at the given index(represented by combo[1])
-            parents.append(self.generation[combo[1]])
-
-        # We will reset the generation set
-        self.generation = []
-
-        # We will loop through the parents of the world
-        for worlds in parents:
-            # We will reset the world
-            worlds.reset()
-
-            # We will then append the parent freshly reset in the list of generations
-            self.generation.append(worlds)
-
-        # We will then repopulate the generation set until we have a size of 'generation_size'
-        while len(self.generation) < self.generation_size:
-            # We will compute index 1 and 2 that will represent parents 1 and 2
-            index1 = random.randint(0, len(parents)-1)
-            index2 = random.randint(0, len(parents)-1)
-
-            # We will then perform...hehehehehe
-            self.sex(parents[index1], parents[index2])
+        for trial in range(self.trials):
+            for world in self.generation:
+                world.reset(reset_best_fitness=False, reset_last_fitnesses=False)
+                world.simulate(steps=self.sim_steps)

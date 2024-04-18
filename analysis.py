@@ -15,7 +15,7 @@ import random
 # for filepath in glob.glob("worlds\interstate\dense\*.pkl"):
 #     print(filepath)
 
-filepath = "worlds\interstate\dense\\20.pkl"
+filepath = "worlds\\test\\best.pkl"
 W = utils.load_world(filepath)
 W.simulate(steps=100, display=True)
 print(W.fitness())
@@ -25,7 +25,9 @@ G = W.mold.G
 # Get the degree skew
 pl_coefficient = 0.0
 
-degrees = dict(nx.degree(G)).values()
+largest_component = G.subgraph(max(nx.connected_components(G), key=len))
+
+degrees = dict(nx.degree(largest_component)).values()
 min_degree = min(degrees)
 
 d_sum = 0
@@ -39,9 +41,7 @@ print("Power-law coefficient:", round(pl_coefficient, 1))
 # Small worldedness
 avg_shortest_paths = 0.0
 
-largest_component = max(nx.connected_components(G), key=len)
-
-vertices = random.sample(list(largest_component), 10)
+vertices = random.sample(list(largest_component.nodes), 20)
 
 sum = 0
 count = 0
