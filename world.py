@@ -83,6 +83,8 @@ class World(object):
         for food_coords, food_weight in list(self.food.items()):
             if self.mold.has_node(food_coords):
                 self.mold.set_node_weight(food_coords, self.mold.get_node_weight(food_coords)+min(self.absorption_rate, food_weight))
+                if food_coords not in self.mold.food_reached:
+                    self.mold.food_reached.append(food_coords)
 
                 # if food_weight <= self.absorption_rate:
                 #     self.food.pop(food_coords)

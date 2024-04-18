@@ -24,6 +24,8 @@ class Mold():
 
         self.world_size = world_size
 
+        self.food_reached = []
+
         self.chromosome = {'decay_rate':decay_rate, #[0,1]. Proportion of weight to decay at each step. TODO
                            'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
                            # 10-20-10 -> 15-10-15 with ratio=0.5 

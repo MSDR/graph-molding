@@ -13,3 +13,9 @@ def num_nodes(mold):
 def dense(mold):
     n = num_nodes(mold)
     return sum_weight(mold)/(n if n > 0 else 1)
+
+def dense_with_food(mold):
+    n = num_nodes(mold)
+    dense = sum_weight(mold)/(n if n > 0 else 1)
+    food_reached = max(len(mold.food_reached), 1)
+    return dense*food_reached
