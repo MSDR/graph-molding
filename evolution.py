@@ -102,6 +102,8 @@ class GeneticAlgorithm():
             best_world = self.generation[0]
             best_world_fitness = sum(best_world.last_fitnesses)/len(best_world.last_fitnesses)
 
+            print("epoch %d, avg. last fitness: %.2f" % (epoch, best_world_fitness))
+
             # save best world
             if best_world_fitness > best_fitness:
                 best_fitness = best_world_fitness
