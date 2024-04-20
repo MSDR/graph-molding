@@ -6,106 +6,126 @@ import utils
 
 class Mold():
   ### core functionality ######################################################################################
+    
     def __init__(self, center_coords, starting_center_weight, world_size,
-                 decay_rate=0.5, differential_redist_ratio=0.7,
-                 new_tendril_chance=0.5, new_tendril_weight=0.5,
+                 decay_rate=0.9, differential_redist_ratio_older=0.7, differential_redist_ratio_younger=0.5,
+                 new_tendril_chance=0.005, new_tendril_weight=0.5,
                  tendril_branch_chance=0.3, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
-                 tendril_extension_chance=0.6, tendril_extension_bend_stdev=0.2, tendril_extension_weight=0.9):
+                 tendril_extension_chance=0.6, tendril_extension_bend_stdev=0.4, tendril_extension_weight=0.9):
         
-        # initialize center values
+        self.G = nx.Graph()
+
+        self.add_node(center_coords, int(starting_center_weight))
         self.starting_center_weight = starting_center_weight
         self.center_coords = center_coords
+
+        self.frozen_G = None
+        self.freeze_G()
+
         self.world_size = world_size
 
-        # tracks locations of food reached by mold. updated by world.feed()
         self.food_reached = []
 
-        # fill chromosome
-        self.chromosome = {'decay_rate':decay_rate, #[0,1]. Proportion of weight to decay at each step: -10*decay_rate
-                           'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
+        self.chromosome = {'decay_rate':decay_rate, #[0,1]. Proportion of weight to decay at each step. TODO
+                           'differential_redist_ratio_older':differential_redist_ratio_older, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
+                           'differential_redist_ratio_younger':differential_redist_ratio_younger,
                            # 10-20-10 -> 15-10-15 with ratio=0.5 
                            
-                           'new_tendril_chance':new_tendril_chance/10, #[0,0.1]. Chance per step to create new tendril from center.
+                           'new_tendril_chance':new_tendril_chance, #[0,1]. Chance per step to create new tendril from center.
                            'new_tendril_weight':new_tendril_weight, #[0,1]. Proportion of center weight to pass to new tendril.
-                           # node -- tube -- node
-                           #           |
-                           #          new
+                           # center
+                           #    |
+                           #   new
 
                            'tendril_branch_chance':tendril_branch_chance, #[0,1]. Chance per step per leaf to branch.
                            'tendril_branch_weight':tendril_branch_weight, #[0,1]. Proportion of leaf weight to pass to new leaves.
                            'tendril_branch_left_ratio':tendril_branch_left_ratio, #[0,1]. Proportion of branch weight to give to left branch.
-                           #   node
-                           #     |
                            #   leaf
                            #   /  \
                            #  R    L
 
                            'tendril_extension_chance':tendril_extension_chance, #[0,1]. Chance per step per leaf to extend tendril if branch failed.
-                           'tendril_extension_bend_stdev':tendril_extension_bend_stdev/2, #[0,0.5], lower value means more bending.
+                           'tendril_extension_bend_stdev':tendril_extension_bend_stdev, #[0,0.5], lower value means more bending.
                            'tendril_extension_weight':tendril_extension_weight} #[0,1]. Proportion of leaf weight to pass to new leaf.
-                            #   leaf  or  leaf  or   leaf -- new
-                            #     |         \
-                            #    new        new
+                            #   leaf  leaf   leaf-new
+                            #     |      \
+                            #    new     new
 
-        # create G and first tendril from center
-        self.reset_G()
-
-    # perform one step of simulation
     def step(self):
+        self.age()
         self.decay()
         self.distribute_weight()
 
-        # leaves have degree 1, tubes degree 2
-        leaves, tubes = self.find_extension_sources()
-
-        # branch or extend from leaves
-        for leaf in leaves:
+        # branch or extend
+        tendril_leaves = self.find_tendril_leaves()
+        for leaf in tendril_leaves:
             if random.random() < self.chromosome['tendril_branch_chance']:
                 self.branch_tendril(leaf)
             elif random.random() < self.chromosome['tendril_extension_chance']:
                 self.extend_tendril(leaf)
+        
 
-        # new tendril from tubes
-        for node in tubes:
-            if random.random() < self.chromosome['new_tendril_chance']:
-                self.new_tendril(node)
+        # create new tendril from non-leaves
+        for node in set(self.G.nodes)-tendril_leaves:
+            if len(list(self.G.neighbors(node))) == 2:
+                if random.random() < self.chromosome['new_tendril_chance']:
+                    self.new_tendril(node)
+
 
 
   ### utility functions #######################################################################################
 
    ## direct mold functionality ########################
-    # for each node, decay: weight - 10*decay_rate
+    def age(self):
+        for node, ddata in list(self.G.nodes(data=True)):
+            ddata['age'] += 1
+
     def decay(self):
         nodes = list(self.G.nodes())
         for node in nodes:
-            weight = self.get_node_weight(node)
 
+            weight = self.get_node_weight(node)
             if weight < 1:
                 self.remove_node(node)
             else:
-                decay_amount = int(10*(1-max(0, self.chromosome['decay_rate'])))
+                decay_amount = int((self.get_node_age(node)/10*(1-max(0, self.chromosome['decay_rate']))))
+                decay_amount = max(0, min(10, decay_amount))
                 self.set_node_weight(node, weight-decay_amount)
 
-    # distibute weight from each node to its smaller neighbors, prioritizing larger weight
+
     def distribute_weight(self):
         self.freeze_G()
 
         for node in list(self.G.nodes()):
             node_weight = self.frozen_G.nodes[node]['weight']
+            node_age = self.frozen_G.nodes[node]['age']
 
-            # only consider neighbors with smaller weight, and sort by decreasing weight
-            neighbors = {(nbor,self.frozen_G.nodes[nbor]['weight']) for nbor in list(self.G.neighbors(node)) if self.frozen_G.nodes[nbor]['weight'] < node_weight}
-            sorted_neighbors = sorted([(nbor, nbor_weight) for nbor, nbor_weight in neighbors], key=lambda l: l[1], reverse=True)
+            # {neighbor:neighbor_weight}
+            # only consider neighbors with smaller weight
+            neighbors = {(nbor,self.frozen_G.nodes[nbor]['weight'],self.frozen_G.nodes[nbor]['age']) for nbor in list(self.G.neighbors(node)) if self.frozen_G.nodes[nbor]['weight'] < node_weight}
+            sorted_neighbors = sorted([(nbor, nbor_weight, nbor_age) for nbor, nbor_weight, nbor_age in neighbors], key=lambda l: (l[2], l[1]), reverse=True)
 
             # distribute weight based on ratio of weight differential        
-            for nbor, nbor_weight in sorted_neighbors:
-                weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio'])
+            given_older = False    
+            for nbor, nbor_weight, nbor_age in sorted_neighbors:
+                
+                # if not given_older and nbor_age > self.get_node_age(node):
+                #     weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio_older'])
+                #     given_older = True
+                # else:
+                #     weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio_younger'])
+                weight_diff = int((node_weight - nbor_weight)*self.chromosome['differential_redist_ratio_older'])
 
+                old_total = self.get_node_weight(node) + self.get_node_weight(nbor)
                 if self.get_node_weight(node) - weight_diff > 1:
                     self.set_node_weight(node, self.get_node_weight(node) - weight_diff)
                     self.set_node_weight(nbor, self.get_node_weight(nbor) + weight_diff)
+                    new_total = self.get_node_weight(node) + self.get_node_weight(nbor)
 
-    # from leaf, branch at 45deg and -45deg
+                    #if new_total - old_total > 0.000001:
+                        #print("problem! new: %f, old: %f" % (new_total, old_total))
+
+
     def branch_tendril(self, leaf_coords):
         extension_coords = self.calculate_tendril_extension(leaf_coords)
         left_extension_coords = utils.move_on_3x3_square_perimeter(leaf_coords, extension_coords, -1)
@@ -131,7 +151,9 @@ class Mold():
             if right_weight >= 1 and updated_leaf_weight >= 1:
                 self.add_node_edge(leaf_coords, right_extension_coords, updated_leaf_weight, right_weight)
 
+    
     # given a leaf node (deg == 1), extend a tendril in the same direction
+    # this expects end_node as str
     def extend_tendril(self, leaf_coords):
         extension_coords = self.calculate_tendril_extension(leaf_coords)
 
@@ -151,11 +173,9 @@ class Mold():
             if new_weight >= 1 and leaf_weight >= 1:
                 self.add_node_edge(leaf_coords, extension_coords, leaf_weight, new_weight)
 
-    # creates a tendril from source node in a random direction, if an adjacent spot is unoccupied
-    def new_tendril(self, source_coords=None):
-        if source_coords is None:
-            source_coords = self.center_coords
 
+    # creates a tendril from the center node, if an adjacent spot is unoccupied
+    def new_tendril(self, source_coords):
         if type(source_coords) != tuple:
             source_coords = utils.coords_to_tuple(source_coords)
 
@@ -186,20 +206,11 @@ class Mold():
     def freeze_G(self):
         self.frozen_G = copy.deepcopy(self.G)
 
-
    ## search within mold ###############################
-    # returns leaves (d=1) and tubes (d=2)
-    def find_extension_sources(self):
-        leaves = set()
-        tubes = set()
-        for node, d in self.G.degree():
-            if d == 1:
-                leaves.add(node)
-            elif d == 2:
-                tubes.add(node)
-        return leaves, tubes
+    # all nodes with degree <= 1
+    def find_tendril_leaves(self):
+        return {node for node, d in self.G.degree() if d == 1}
     
-    # given leaf, calculate coordinates opposite its neighbor
     def calculate_tendril_extension(self, leaf_coords):
         neighbor = list(self.G.neighbors(leaf_coords))
                 
@@ -208,12 +219,10 @@ class Mold():
         nbor_x, nbor_y = utils.coords_to_tuple(neighbor[0])
         return (leaf_x + (leaf_x - nbor_x), leaf_y + (leaf_y - nbor_y))
     
-    # reset G to center node and one new tendril
     def reset_G(self):
         self.G = nx.Graph()
 
         self.add_node(self.center_coords, int(self.starting_center_weight))
-        self.new_tendril(self.center_coords)
 
         self.frozen_G = None
         self.freeze_G()
@@ -232,13 +241,38 @@ class Mold():
         if self.G.has_node(coords): # if coords exists, sum weight of existing node and new weight
             self.set_node_weight(coords, self.get_node_weight(coords)+weight)
         else:
-            self.G.add_node(coords, pos=pos, weight=weight)
+            self.G.add_node(coords, pos=pos, weight=weight, age=1)
 
     def remove_node(self, coords):
         if type(coords) != str:
             coords = utils.coords_to_str(coords)
         
         self.G.remove_node(coords)
+
+    def has_node(self, coords):
+        if type(coords) != str:
+            coords = utils.coords_to_str(coords)
+        
+        return self.G.has_node(coords)
+    
+    def get_node_age(self, coords):
+        if type(coords) != str:
+            coords = utils.coords_to_str(coords)
+
+        return self.G.nodes[coords]['age']
+
+    def get_node_weight(self, coords):
+        if type(coords) != str:
+            coords = utils.coords_to_str(coords)
+
+        return self.G.nodes[coords]['weight']
+
+    def set_node_weight(self, coords, weight):
+        if type(coords) != str:
+            coords = utils.coords_to_str(coords)
+
+        self.G.nodes[coords]['weight'] = weight
+        
 
     def add_edge(self, coords_u, coords_v):
         if type(coords_u) != str:
@@ -265,21 +299,3 @@ class Mold():
         self.add_node(new_node_coords, new_weight)
         self.add_edge(existing_node_coords, new_node_coords)
         self.set_node_weight(existing_node_coords, existing_weight)
-
-    def has_node(self, coords):
-        if type(coords) != str:
-            coords = utils.coords_to_str(coords)
-        
-        return self.G.has_node(coords)
-
-    def get_node_weight(self, coords):
-        if type(coords) != str:
-            coords = utils.coords_to_str(coords)
-
-        return self.G.nodes[coords]['weight']
-
-    def set_node_weight(self, coords, weight):
-        if type(coords) != str:
-            coords = utils.coords_to_str(coords)
-
-        self.G.nodes[coords]['weight'] = weight

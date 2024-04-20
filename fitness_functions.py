@@ -10,16 +10,23 @@ def sum_weight(mold):
 def num_nodes(mold):
     return mold.G.number_of_nodes()
 
+# sum_weight / max(1, num_nodes)
 def dense(mold):
     n = num_nodes(mold)
-    return sum_weight(mold)/(n if n > 0 else 1)
+    return sum_weight(mold)/max(1, n)
 
+# max(1, number of food reached)
+def food_reached(mold):
+    return max(len(mold.food_reached), 1)
+
+# dense * food_reached
 def dense_with_food(mold):
-    n = num_nodes(mold)
-    dense = sum_weight(mold)/(n if n > 0 else 1)
-    food_reached = max(len(mold.food_reached), 1)
-    return dense*food_reached
+    dense_ = dense(mold)
+    food_reached_ = food_reached(mold)
+    return dense_*food_reached_
 
+# (sum weight / max weight) * max(1, num food reached)
+# returns 0 if mold has 0 nodes
 def densemax_with_food(mold):
     nodes = mold.G.nodes()
     if len(nodes) == 0:

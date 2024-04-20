@@ -52,12 +52,7 @@ class GeneticAlgorithm():
             # We will then loop through every chromosome and set a random value
             chromosomes = new_world.mold.chromosome.keys()
             for chromosome in chromosomes:
-                if chromosome == 'decay_rate':
-                    new_world.mold.chromosome[chromosome] = 0.01
-                elif chromosome == 'tendril_extension_bend_stdev':
-                    new_world.mold.chromosome[chromosome]/=2
-                else:
-                    new_world.mold.chromosome[chromosome] = random.random()
+                new_world.mold.chromosome[chromosome] = random.random()
 
             # We will then append it to the total list of molds
             generational_molds.append(new_world)
@@ -77,8 +72,7 @@ class GeneticAlgorithm():
             # If we are less than the mutation rate, then we simply initialize the gene at a random value
             if random.random() < self.mutation_rate:
                 child_world.mold.chromosome[gene] = random.random()
-                if gene == 'tendril_extension_bend_stdev':
-                    child_world.mold.chromosome[gene]/=2
+
             # Else, we will take the gene value from either parent 1 or parent 2
             else:
                 # If we randomly select 0, we will take the gene value from parent 1

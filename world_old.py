@@ -50,7 +50,9 @@ class World(object):
             self.launch_display()
             self.display()
             time.sleep(1)
-                
+        
+        self.mold.new_tendril()
+        
         for step in range(steps):
             frame_start = time.time()
 

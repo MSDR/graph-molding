@@ -1,6 +1,7 @@
 import fitness_functions
 import world
 
+# randomly places 500 food on 100x100 grid
 def random_500(fitness_function=fitness_functions.num_nodes):
     W = world.World(mold_pos=(50,50), fitness_function=fitness_function)
     W.place_food(num_random=500)
@@ -17,6 +18,8 @@ def gif_mold(fitness_function=fitness_functions.num_nodes):
     W.place_food()
     return W
 
+# U.S. major cities
+# https://64.media.tumblr.com/c7d06c63948a143d0863dc1606a69f64/tumblr_mrrc45kkvA1r9rssfo1_500.jpg
 def interstate_map(fitness_function=fitness_functions.num_nodes):
     W = world.World(size=(93,60), mold_pos=(46,35), fitness_function=fitness_function,
                     food_coords=[((9, 56), 1000), ((15, 54), 1000), ((20, 51), 1000), ((24, 52), 1000), ((40, 49), 1000), ((51, 44), 1000), ((60, 41), 1000), ((68, 40), 1000), ((74, 42), 1000), 

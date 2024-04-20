@@ -1,0 +1,1 @@
+epochs=100, sim_steps=100, trials=5, mutation_rate=0.05, generation_size=100, success_ratio=0.1
