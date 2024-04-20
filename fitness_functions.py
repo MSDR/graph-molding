@@ -19,3 +19,13 @@ def dense_with_food(mold):
     dense = sum_weight(mold)/(n if n > 0 else 1)
     food_reached = max(len(mold.food_reached), 1)
     return dense*food_reached
+
+def densemax_with_food(mold):
+    nodes = mold.G.nodes()
+    if len(nodes) == 0:
+        return 0
+    
+    max_weight = sorted([mold.get_node_weight(n) for n in nodes])[-1]
+    dense = sum_weight(mold)/max(max_weight, 1)
+    food_reached = max(len(mold.food_reached), 1)
+    return dense*food_reached

@@ -7,7 +7,7 @@ import random
 import time
 
 class World(object):
-    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.num_nodes,
+    def __init__(self, size=(100,100), mold_pos=(50,50), fitness_function=fitness_functions.num_nodes, track_best_fitness=False,
                  num_random_food=0, random_food_range=(100,1000), food_coords=[], seed=None):
         self.size = size
         self.absorption_rate = 100
@@ -22,6 +22,7 @@ class World(object):
         self.mold = Mold(mold_pos, 10000, self.size)
         self.food = {}
 
+        self.track_best_fitness = track_best_fitness
         self.best_fitness = -float('inf')
         self.last_fitnesses = []
 
@@ -59,9 +60,10 @@ class World(object):
             self.mold.step()
 
             # update fitness tracker
-            fitness = self.fitness()
-            if fitness > self.best_fitness:
-                self.best_fitness = fitness
+            if self.track_best_fitness:
+                fitness = self.fitness()
+                if fitness > self.best_fitness:
+                    self.best_fitness = fitness
 
             if display:
                 self.display()
@@ -116,7 +118,7 @@ class World(object):
         node_weights = [max(1, 100*(w/(1000))) for w in node_weights]
         node_color = [[138/255,54/255,31/255]] # brown
         nx.draw(self.mold.G, pos, node_size=node_weights, node_color=node_color, width=1)
-        plt.title("fitness: "+str(self.fitness_function(self.mold)))
+        plt.title("fitness: "+str(self.fitness()))
         plt.plot()
 
         food_sizes = [max(1, 100*(f/1000)) for f in list(self.food.values())]

@@ -1,6 +1,7 @@
 import copy
 import designed_worlds
 import fitness_functions
+from pathlib import Path
 import random
 import utils
 import world
@@ -33,8 +34,10 @@ class GeneticAlgorithm():
         self.generation = self.first_generation(generation_size)
 
         # checkpoint info
-        self.ckpt_folder = ckpt_folder # leave as None to not save checkpoints
         self.ckpt_interval = ckpt_interval
+        self.ckpt_folder = ckpt_folder # leave as None to not save checkpoints
+        if self.ckpt_folder is not None:
+            Path(self.ckpt_folder).mkdir(parents=True, exist_ok=True)
 
     # populates first generation of worlds
     def first_generation(self, generation_size):
