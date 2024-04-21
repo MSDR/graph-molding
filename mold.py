@@ -7,10 +7,10 @@ import utils
 class Mold():
   ### core functionality ######################################################################################
     def __init__(self, center_coords, starting_center_weight, world_size,
-                 decay_rate=0.5, differential_redist_ratio=0.7,
-                 new_tendril_chance=0.5, new_tendril_weight=0.5,
-                 tendril_branch_chance=0.3, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
-                 tendril_extension_chance=0.6, tendril_extension_bend_stdev=0.2, tendril_extension_weight=0.9):
+                 decay_rate=0.01, differential_redist_ratio=0.7,
+                 new_tendril_chance=1.0, new_tendril_weight=0.5,
+                 tendril_branch_chance=0.8, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
+                 tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.8, tendril_extension_weight=0.9):
         
         # initialize center values
         self.starting_center_weight = starting_center_weight
@@ -25,7 +25,7 @@ class Mold():
                            'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
                            # 10-20-10 -> 15-10-15 with ratio=0.5 
                            
-                           'new_tendril_chance':new_tendril_chance/10, #[0,0.1]. Chance per step to create new tendril from center.
+                           'new_tendril_chance':new_tendril_chance/100, #[0,0.01]. Chance per step to create new tendril from center.
                            'new_tendril_weight':new_tendril_weight, #[0,1]. Proportion of center weight to pass to new tendril.
                            # node -- tube -- node
                            #           |
