@@ -1,4 +1,5 @@
 import mold
+import networkx as nx
 
 ### fitness functions #######################################################################################
 
@@ -24,6 +25,12 @@ def dense_with_food(mold):
     dense_ = dense(mold)
     food_reached_ = food_reached(mold)
     return dense_*food_reached_
+
+# dense_with_food / (number_connected_components**2)
+def dense_with_food_cc_penalty(mold):
+    dense_with_food_ = dense_with_food(mold)
+    num_connected_components = max(1, nx.number_connected_components(mold.G))
+    return dense_with_food_/(num_connected_components**2)
 
 # (sum weight / max weight) * max(1, num food reached)
 # returns 0 if mold has 0 nodes

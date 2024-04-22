@@ -1,7 +1,7 @@
 import fitness_functions
 import matplotlib.pyplot as plt
-import mold
-from mold import Mold
+import mold_old
+from mold_old import Mold
 import networkx as nx
 import random
 import time
