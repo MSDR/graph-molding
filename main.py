@@ -12,8 +12,8 @@ import world
 display=True
 
 ### Interstate Demo
-# W = designed_worlds.interstate_map(fitness_function=fitness_functions.dense)
-# W.simulate(steps=300, display=display)
+W = designed_worlds.gif_mold(fitness_function=fitness_functions.dense)
+W.simulate(steps=300, display=display)
 
 
 ## Genetic Algorithm Demo

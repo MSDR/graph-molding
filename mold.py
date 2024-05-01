@@ -7,9 +7,9 @@ import utils
 class Mold():
   ### core functionality ######################################################################################
     def __init__(self, center_coords, starting_center_weight, world_size,
-                 decay_rate=0.01, differential_redist_ratio=0.7,
-                 new_tendril_chance=1.0, new_tendril_weight=0.5,
-                 tendril_branch_chance=0.8, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
+                 decay_rate=1.000, differential_redist_ratio=0.7,
+                 new_tendril_chance=0.01, new_tendril_weight=0.5,
+                 tendril_branch_chance=0.4, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
                  tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.8, tendril_extension_weight=0.9):
         
         # initialize center values

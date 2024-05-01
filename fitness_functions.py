@@ -1,4 +1,5 @@
 import mold
+import mold_old
 import networkx as nx
 
 ### fitness functions #######################################################################################
