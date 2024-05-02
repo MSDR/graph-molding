@@ -42,54 +42,93 @@ G = W.mold.G
 #   W.simulate(steps=200, display=False)
 #   W.display("dense_with_food" + str(i))
 
-ITERATIONS=10
-filepaths = ["old_worlds/interstate/densemax_with_food/best.pkl"]
+ITERATIONS=4
+filepaths = [
+            # "old_worlds/interstate/dense/best.pkl",
+            # "old_worlds/interstate/densemax_with_food/best.pkl",
+            # "worlds/interstate/dense_with_food/best.pkl",
+            "worlds/interstate/dense_with_food_cc_penalty/best.pkl"
+          ]
 
-average_largest_component = 0
-average_pl = 0
-average_path = 0
-average_diameter = 0
-for i in range(ITERATIONS):
-  random.seed(i)
-  print("i: ", i)
-  W = utils.load_world(filepath)
-  if "old" in filepath:
-    W = convert_to_world_old(W)
-  W.simulate(steps=200, display=False)
-  G = W.mold.G
+for filepath in filepaths:
+  print(filepath)
 
-  # Get the largest component
-  largest_component = G.subgraph(max(nx.connected_components(G), key=len))
+  average_largest_component = 0
+  average_pl = 0
+  average_path = 0
+  average_diameter = 0
+  average_k_core = 0
+  average_k_conn = 0
+  for i in range(ITERATIONS):
+    random.seed(i)
+    print("i: ", i)
+    W = utils.load_world(filepath)
+    if "old" in filepath:
+      W = convert_to_world_old(W)
+    W.simulate(steps=200, display=False)
+    G = W.mold.G
 
-  # print("Largest component order:", largest_component.order())
-  # print("Largest component size:", largest_component.size())
-  # print()
+    # Get the largest component
+    largest_component = G.subgraph(max(nx.connected_components(G), key=len))
 
-  # Get the degree skew of the largest component
-  pl_coefficient = 0.0
+    # print("Largest component order:", largest_component.order())
+    # print("Largest component size:", largest_component.size())
+    # print()
 
-  degrees = dict(nx.degree(largest_component)).values()
-  min_degree = min(degrees)
+    # Get the degree skew of the largest component
+    pl_coefficient = 0.0
 
-  d_sum = 0
-  for d in degrees:
-    d_sum += math.log(d/min_degree)
+    degrees = dict(nx.degree(largest_component)).values()
+    min_degree = min(degrees)
 
-  pl_coefficient = 1 + len(degrees) / d_sum
+    d_sum = 0
+    if len(degrees) > 1:
+      for d in degrees:
+        d_sum += math.log(d/max(1, min_degree))
 
-  print("Power-law coefficient:", round(pl_coefficient, 3))
+    pl_coefficient = 1 + len(degrees) / max(d_sum, 1)
+
+    # print("Power-law coefficient:", round(pl_coefficient, 3))
+    # print()
+
+    # k cores
+    cores = []
+
+    k = 0
+    while True:
+      k_core = nx.k_core(largest_component, k=k)
+
+      if k_core.order() == 0:
+        break
+
+      cores.append(k_core)
+      k += 1
+
+    average_k_core += k
+
+    # Get the k connectivity
+    k = 1
+    while nx.is_k_edge_connected(largest_component, k):
+      k += 1
+    k -= 1
+
+    average_k_conn += k
+
+
+    average_largest_component += largest_component.order()
+    average_pl += pl_coefficient
+    average_path += nx.average_shortest_path_length(largest_component)
+    average_diameter += nx.diameter(largest_component)
+    print()
+
+
+  print("largest component:", int(average_largest_component/ITERATIONS))
+  print("pl:", average_pl/ITERATIONS)
+  print("average path:", average_path/ITERATIONS)
+  print("average diameter:", average_diameter/ITERATIONS)
+  print("average k core:", average_k_core/ITERATIONS)
+  print("average_k_conn:", average_k_conn/ITERATIONS)
   print()
-
-  average_largest_component += largest_component.order()
-  average_pl += pl_coefficient
-  average_path += nx.average_shortest_path_length(largest_component)
-  average_diameter += nx.diameter(largest_component)
-  print()
-
-print("largest component:", int(average_largest_component/ITERATIONS))
-print("pl:", average_pl/ITERATIONS)
-print("average path:", average_path/ITERATIONS)
-print("average diameter:", average_diameter/ITERATIONS)
 
 # # Get the k cores of the graph
 # cores = []
