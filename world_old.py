@@ -104,7 +104,7 @@ class World(object):
         plt.close()
 
     # display (in a separate window)
-    def display(self):
+    def display(self, fig_name=None):
         plt.clf()
 
         # plot border lines of grid
@@ -125,7 +125,10 @@ class World(object):
         plt.scatter([c[0] for c in self.food.keys()], [c[1] for c in self.food.keys()], s=food_sizes, c='green')
 
         # allow rendering time
-        plt.pause(0.01)       
+        if fig_name:
+            plt.savefig(fig_name + ".png")   
+        else:
+            plt.pause(0.01)   
 
     def reset(self, reset_best_fitness=True, reset_last_fitnesses=True):
         # reset mold

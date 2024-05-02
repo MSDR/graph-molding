@@ -29,19 +29,20 @@ def run_world(filepath, old=False, steps=100, wait=False):
         input()
 
 # dense: sum_weight/num_nodes
-run_world("old_worlds/interstate/dense/best.pkl", old=True, steps=100, wait=True)
+# run_world("old_worlds/interstate/dense/best.pkl", old=True, steps=200, wait=True)
 
 # dense_with_food: dense*num_food_reached
-run_world("old_worlds/interstate/dense_with_food/best.pkl", old=True, steps=50, wait=True)
+# run_world("old_worlds/interstate/dense_with_food/best.pkl", old=True, steps=200, wait=True)
 
 # densemax: sum_weight/max_weight
+
 # densemax_with_food: densemax*food_reached
-run_world("old_worlds/interstate/densemax_with_food/best.pkl", old=True, steps=200, wait=True)
+# run_world("old_worlds/interstate/densemax_with_food/best.pkl", old=True, steps=200, wait=True)
 
 
 
 # dense_with_food: dense*num_food_reached
-run_world("worlds/interstate/dense_with_food/best.pkl", old=False, steps=300, wait=True)
+# run_world("worlds/interstate/dense_with_food/best.pkl", old=False, steps=200, wait=True)
 
 # dense_with_food_cc_penalty: dense_with_food/(num_cc**2)
 run_world("worlds/interstate/dense_with_food_cc_penalty/best.pkl", old=False, steps=200, wait=True)
