@@ -26,6 +26,7 @@ def run_world(filepath, old=False, steps=100, wait=False):
     print(" > fitness: %.2f\n" % W.fitness())
 
     if wait:
+        print("press enter to continue:")
         input()
 
 # dense: sum_weight/num_nodes

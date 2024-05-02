@@ -12,7 +12,31 @@ import world
 display=True
 
 ### Interstate Demo
-W = designed_worlds.gif_mold(fitness_function=fitness_functions.dense)
+W = designed_worlds.interstate_map(fitness_function=fitness_functions.dense)
+W.mold.chromosome = {'decay_rate':0.005, #[0,1]. Proportion of weight to decay at each step: -10*(1-decay_rate)
+                    'differential_redist_ratio':0.8, #[0,1].
+                    
+                    'new_tendril_chance':0.1, #/100 = [0,0.01]. Chance per step to create new tendril from center.
+                    'new_tendril_weight':0.5, #[0,1]. Proportion of center weight to pass to new tendril.
+                    # node -- tube -- node
+                    #           |
+                    #          new
+
+                    'tendril_branch_chance':0.3, #[0,1]. Chance per step per leaf to branch.
+                    'tendril_branch_weight':0.9, #[0,1]. Proportion of leaf weight to pass to new leaves.
+                    'tendril_branch_left_ratio':0.5, #[0,1]. Proportion of branch weight to give to left branch.
+                    #   node
+                    #     |
+                    #   leaf
+                    #   /  \
+                    #  R    L
+
+                    'tendril_extension_chance':0.7, #[0,1]. Chance per step per leaf to extend tendril if branch failed.
+                    'tendril_extension_bend_stdev':0.5, #/2 = [0,0.5], lower value means more bending.
+                    'tendril_extension_weight':0.9} #[0,1]. Proportion of leaf weight to pass to new leaf.
+                    #   leaf  or  leaf  or   leaf -- new
+                    #     |         \
+                    #    new        new
 W.simulate(steps=300, display=display)
 
 
@@ -42,11 +66,8 @@ W.simulate(steps=300, display=display)
 
 
 ### Evolution Demo
-W = utils.load_world("worlds/interstate/dense_with_food_cc_penalty/best.pkl")
-W.simulate(steps=300, display=True)
-print(W.fitness(), '\n')
-for filepath in glob.glob("worlds/interstate/dense_with_food_cc_penalty/*.pkl"):
-    print("simulating", filepath)
-    W = utils.load_world(filepath)
-    W.simulate(steps=100, display=True)
-    print(W.fitness(), '\n')
+# for filepath in glob.glob("worlds/interstate/dense_with_food_cc_penalty/*.pkl"):
+#     print("simulating", filepath)
+#     W = utils.load_world(filepath)
+#     W.simulate(steps=100, display=True)
+#     print(W.fitness(), '\n')

@@ -8,9 +8,9 @@ class Mold():
   ### core functionality ######################################################################################
     def __init__(self, center_coords, starting_center_weight, world_size,
                  decay_rate=1.000, differential_redist_ratio=0.7,
-                 new_tendril_chance=0.01, new_tendril_weight=0.5,
-                 tendril_branch_chance=0.4, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
-                 tendril_extension_chance=0.8, tendril_extension_bend_stdev=0.8, tendril_extension_weight=0.9):
+                 new_tendril_chance=0.1, new_tendril_weight=0.5,
+                 tendril_branch_chance=0.01, tendril_branch_weight=0.9, tendril_branch_left_ratio=0.5,
+                 tendril_extension_chance=0.9, tendril_extension_bend_stdev=0.5, tendril_extension_weight=0.9):
         
         # initialize center values
         self.starting_center_weight = starting_center_weight
@@ -22,7 +22,7 @@ class Mold():
 
         # fill chromosome
         self.chromosome = {'decay_rate':decay_rate, #[0,1]. Proportion of weight to decay at each step: -10*decay_rate
-                           'differential_redist_ratio':differential_redist_ratio, #[0,1], [0,0.5) propagates weight outwards, (0.5,1] inwards.
+                           'differential_redist_ratio':differential_redist_ratio, #[0,1].
                            # 10-20-10 -> 15-10-15 with ratio=0.5 
                            
                            'new_tendril_chance':new_tendril_chance/100, #[0,0.01]. Chance per step to create new tendril from center.
