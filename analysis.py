@@ -19,10 +19,15 @@ random.seed(11)
 
 filepath = "worlds\\test\\best.pkl"
 W = utils.load_world(filepath)
-W.simulate(steps=100, display=False)
+W.simulate(steps=200, display=False)
 print(W.fitness())
 
 G = W.mold.G
+
+# Save a set of image
+for i in range(10):
+  W.simulate(steps=200, display=False)
+  W.display("images/densemax_with_food_" + str(i))
 
 # Get the largest component
 largest_component = G.subgraph(max(nx.connected_components(G), key=len))
